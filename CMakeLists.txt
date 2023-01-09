@@ -530,14 +530,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/summary.cmake)
 fastdeploy_summary()
 
 ################################ Installation: FastDeploy C++ SDK ###############################
-if(WIN32)
-  install(
-    TARGETS ${LIBRARY_NAME}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION lib
-  )
-elseif(ANDROID)
+if(ANDROID)
   install(
     TARGETS ${LIBRARY_NAME}
     LIBRARY DESTINATION lib/${ANDROID_ABI}
@@ -545,7 +538,6 @@ elseif(ANDROID)
 else()
   install(
     TARGETS ${LIBRARY_NAME}
-    LIBRARY DESTINATION lib
   )
 endif()
 install(
@@ -554,10 +546,6 @@ install(
   FILES_MATCHING
   PATTERN "*.h"
   PATTERN "${PROJECT_SOURCE_DIR}/${CSRCS_DIR_NAME}/fastdeploy/backends/*/*.h"
-)
-install(
-  DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/third_libs/install
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/third_libs
 )
 
 if(WIN32 AND BUILD_EXAMPLES)
@@ -581,30 +569,9 @@ install(
   ${PROJECT_SOURCE_DIR}/FastDeploy.cmake
   ${PROJECT_SOURCE_DIR}/cmake/FastDeployConfig.cmake
   ${PROJECT_SOURCE_DIR}/cmake/utils.cmake
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fastdeploy
 )
 
-install(
-  DIRECTORY ${PROJECT_SOURCE_DIR}/examples
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
-
-install(
-  FILES ${PROJECT_SOURCE_DIR}/cmake/gflags.cmake
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/utils
-)
-
-if(NOT WIN32)
-  install(
-    FILES ${PROJECT_SOURCE_DIR}/scripts/fastdeploy_init.sh
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-  )
-else()
-  install(
-    FILES ${PROJECT_SOURCE_DIR}/scripts/fastdeploy_init.bat
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
-  )
-endif()
 
 ############################### Building: FastDeploy Python Wheel #############################
 if(BUILD_FASTDEPLOY_PYTHON)
