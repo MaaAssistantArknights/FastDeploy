@@ -123,9 +123,9 @@ if(WIN32)
 endif()
 
 if(WIN32 AND ENABLE_VISION)
-  add_definitions(-DYAML_CPP_DLL)
-  set(YAML_BUILD_SHARED_LIBS ON)
-  set(YAML_CPP_INSTALL ON)
+  add_definitions(-DYAML_CPP_STATIC_DEFINE)
+  set(YAML_BUILD_SHARED_LIBS OFF)
+  set(YAML_CPP_INSTALL OFF)
   set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 endif()
 
@@ -505,17 +505,6 @@ if(ANDROID)
 endif()
 
 target_link_libraries(${LIBRARY_NAME} ${DEPEND_LIBS})
-
-if(WIN32)
-  if(ENABLE_VISION)
-    if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
-      add_custom_target(copy_yaml_library ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/third_party/yaml-cpp  ${CMAKE_CURRENT_BINARY_DIR}/third_libs/install/yaml-cpp/lib DEPENDS ${LIBRARY_NAME})
-    else()
-      add_custom_target(copy_yaml_library ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/third_party/yaml-cpp/Release  ${CMAKE_CURRENT_BINARY_DIR}/third_libs/install/yaml-cpp/lib DEPENDS ${LIBRARY_NAME})
-      add_custom_target(copy_yaml_include ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/third_party/yaml-cpp/include  ${CMAKE_CURRENT_BINARY_DIR}/third_libs/install/yaml-cpp/include DEPENDS ${LIBRARY_NAME})
-    endif()
-  endif()
-endif()
 
 # add examples after prepare include paths for third-parties
 if(BUILD_EXAMPLES AND EXISTS ${PROJECT_SOURCE_DIR}/examples)
