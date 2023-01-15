@@ -779,7 +779,7 @@ void Runtime::CreateOrtBackend() {
   backend_ = utils::make_unique<OrtBackend>();
   auto casted_backend = dynamic_cast<OrtBackend*>(backend_.get());
   if (option.model_format == ModelFormat::ONNX) {
-    FDASSERT(casted_backend->InitFromOnnx(option.model_file, ort_option),
+    FDASSERT(casted_backend->InitFromOnnx(option.model_from_memory_ ? option.model_buffer_ : option.model_file, ort_option, option.model_from_memory_),
              "Load model from ONNX failed while initliazing OrtBackend.");
   } else {
     FDASSERT(casted_backend->InitFromPaddle(option.model_file,

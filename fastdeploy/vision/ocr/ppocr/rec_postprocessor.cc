@@ -21,7 +21,7 @@ namespace vision {
 namespace ocr {
 
 std::vector<std::string> ReadDict(const std::string& path) {
-  std::ifstream in(path);
+  std::istringstream in(path);
   FDASSERT(in, "Cannot open file %s to read.", path.c_str());
   std::string line;
   std::vector<std::string> m_vec;
