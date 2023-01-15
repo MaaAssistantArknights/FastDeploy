@@ -113,12 +113,12 @@ target_link_libraries(FastDeploy_Vision_OCR PUBLIC FastDeploy_Vision_Common ${Op
 # export symbols
 set_target_properties(FastDeploy_Core FastDeploy_Vision_OCR FastDeploy_Backend_ONNXRuntime PROPERTIES COMPILE_DEFINITIONS FASTDEPLOY_LIB)
 
-add_library(MaaDerpLearning SHARED)
+add_library(MaaDerpLearning)
 target_link_libraries(MaaDerpLearning PUBLIC FastDeploy_Vision_OCR PRIVATE FastDeploy_Core FastDeploy_Backend_ONNXRuntime FastDeploy_Vision_Common FastDeploy_TensorFunction)
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18090
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18935
 install(TARGETS MaaDerpLearning FastDeploy_Vision_OCR FastDeploy_Vision_Common FastDeploy_Core FastDeploy_TensorFunction EXPORT MaaDerpLearning)
-install(EXPORT MaaDerpLearning DESTINATION lib/MaaDerpLearning)
+install(EXPORT MaaDerpLearning DESTINATION share/MaaDerpLearning)
 install(
   DIRECTORY ${PROJECT_SOURCE_DIR}/fastdeploy
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include
