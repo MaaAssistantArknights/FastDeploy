@@ -33,7 +33,7 @@
 #ifdef FASTDEPLOY_LIB
 #define FASTDEPLOY_DECL __declspec(dllexport)
 #else
-#define FASTDEPLOY_DECL __declspec(dllimport)
+#define FASTDEPLOY_DECL
 #endif  // FASTDEPLOY_LIB
 #else
 #define FASTDEPLOY_DECL __attribute__((visibility("default")))
