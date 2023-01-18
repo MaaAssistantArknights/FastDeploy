@@ -6,6 +6,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(OpenCV COMPONENTS core imgproc)
 find_package(ONNXRuntime REQUIRED)
 find_package(Eigen3 REQUIRED)
+message("OpenCV_LIBS: ${OpenCV_LIBS} ${OPENCV_core_FOUND} ${OPENCV_WORLD_FOUND}")
 
 add_library(FastDeploy_Core OBJECT
     fastdeploy/core/allocate.cc
@@ -29,7 +30,7 @@ add_library(FastDeploy_Backend_ONNXRuntime OBJECT
     fastdeploy/backends/ort/ort_backend.cc
     fastdeploy/backends/ort/utils.cc
 )
-target_link_libraries(FastDeploy_Backend_ONNXRuntime FastDeploy_Core ONNXRuntime::ONNXRuntime)
+target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE FastDeploy_Core ONNXRuntime::ONNXRuntime)
 
 # hide tensor functions from shared library
 add_library(FastDeploy_TensorFunction OBJECT 
@@ -56,7 +57,7 @@ add_library(FastDeploy_TensorFunction OBJECT
     fastdeploy/function/transpose.cc
 )
 target_include_directories(FastDeploy_TensorFunction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(FastDeploy_TensorFunction Eigen3::Eigen)
+target_link_libraries(FastDeploy_TensorFunction PRIVATE Eigen3::Eigen)
 if(MSVC)
     set_source_files_properties(
         fastdeploy/function/reduce.cc
@@ -113,12 +114,19 @@ target_link_libraries(FastDeploy_Vision_OCR PUBLIC FastDeploy_Vision_Common ${Op
 # export symbols
 set_target_properties(FastDeploy_Core FastDeploy_Vision_OCR FastDeploy_Backend_ONNXRuntime PROPERTIES COMPILE_DEFINITIONS FASTDEPLOY_LIB)
 
-add_library(MaaDerpLearning)
-target_link_libraries(MaaDerpLearning PUBLIC FastDeploy_Vision_OCR PRIVATE FastDeploy_Core FastDeploy_Backend_ONNXRuntime FastDeploy_Vision_Common FastDeploy_TensorFunction)
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18090
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18935
-install(TARGETS MaaDerpLearning FastDeploy_Vision_OCR FastDeploy_Vision_Common FastDeploy_Core FastDeploy_TensorFunction EXPORT MaaDerpLearning)
-install(EXPORT MaaDerpLearning DESTINATION share/MaaDerpLearning)
+add_library(MaaDerpLearning
+    $<TARGET_OBJECTS:FastDeploy_Vision_OCR>
+    $<TARGET_OBJECTS:FastDeploy_Vision_Common>
+    $<TARGET_OBJECTS:FastDeploy_Core>
+    $<TARGET_OBJECTS:FastDeploy_Backend_ONNXRuntime>
+    $<TARGET_OBJECTS:FastDeploy_TensorFunction>
+)
+target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE ONNXRuntime::ONNXRuntime)
+
+install(TARGETS MaaDerpLearning EXPORT MaaDerpLearningConfig)
+install(EXPORT MaaDerpLearningConfig DESTINATION share/MaaDerpLearning)
 install(
   DIRECTORY ${PROJECT_SOURCE_DIR}/fastdeploy
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include
