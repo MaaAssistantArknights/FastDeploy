@@ -124,6 +124,9 @@ add_library(MaaDerpLearning
     $<TARGET_OBJECTS:FastDeploy_TensorFunction>
 )
 target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE ONNXRuntime::ONNXRuntime)
+if(ANDROID)
+  target_link_libraries(MaaDerpLearning PRIVATE log)
+endif()
 
 install(TARGETS MaaDerpLearning EXPORT MaaDerpLearningConfig)
 install(EXPORT MaaDerpLearningConfig DESTINATION share/MaaDerpLearning)
