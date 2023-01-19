@@ -123,6 +123,16 @@ add_library(MaaDerpLearning
     $<TARGET_OBJECTS:FastDeploy_Backend_ONNXRuntime>
     $<TARGET_OBJECTS:FastDeploy_TensorFunction>
 )
+set_target_properties(
+    MaaDerpLearning
+    FastDeploy_Core
+    FastDeploy_Backend_ONNXRuntime
+    FastDeploy_TensorFunction
+    FastDeploy_Vision_Common
+    FastDeploy_Vision_OCR
+    PROPERTIES
+        CXX_STANDARD 17
+)
 target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE ONNXRuntime::ONNXRuntime)
 if(ANDROID)
   target_link_libraries(MaaDerpLearning PRIVATE log)
