@@ -4,7 +4,7 @@ project(MaaDerpLearning CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(OpenCV COMPONENTS core imgproc)
-find_package(ONNXRuntime REQUIRED)
+find_package(onnxruntime REQUIRED)
 find_package(Eigen3 REQUIRED)
 message("OpenCV_LIBS: ${OpenCV_LIBS} ${OPENCV_core_FOUND} ${OPENCV_WORLD_FOUND}")
 
@@ -22,7 +22,7 @@ target_include_directories(FastDeploy_Core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>  # for build
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE}>  # for install
 )
-target_link_libraries(FastDeploy_Core PRIVATE ONNXRuntime::ONNXRuntime)
+target_link_libraries(FastDeploy_Core PRIVATE onnxruntime::onnxruntime)
 
 add_library(FastDeploy_Backend_ONNXRuntime OBJECT
     fastdeploy/backends/ort/ops/adaptive_pool2d.cc
@@ -30,7 +30,8 @@ add_library(FastDeploy_Backend_ONNXRuntime OBJECT
     fastdeploy/backends/ort/ort_backend.cc
     fastdeploy/backends/ort/utils.cc
 )
-target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE FastDeploy_Core ONNXRuntime::ONNXRuntime)
+target_include_directories(FastDeploy_Backend_ONNXRuntime PUBLIC ${onnxruntime_INCLUDE_DIRS}) 
+target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE FastDeploy_Core onnxruntime::onnxruntime)
 
 # hide tensor functions from shared library
 add_library(FastDeploy_TensorFunction OBJECT 
@@ -133,7 +134,7 @@ set_target_properties(
     PROPERTIES
         CXX_STANDARD 17
 )
-target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE ONNXRuntime::ONNXRuntime)
+target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE onnxruntime::onnxruntime)
 if(ANDROID)
   target_link_libraries(MaaDerpLearning PRIVATE log)
 endif()

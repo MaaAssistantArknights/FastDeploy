@@ -22,7 +22,7 @@
 #include <string>
 
 #ifndef NON_64_PLATFORM
-#include <onnxruntime/core/session/onnxruntime_cxx_api.h>  // NOLINT
+#include <onnxruntime_cxx_api.h>  // NOLINT
 
 #ifdef WITH_GPU
 #include "fastdeploy/backends/op_cuda_kernels/adaptive_pool2d_kernel.h"
