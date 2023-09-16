@@ -56,34 +56,34 @@ bool Mat::CopyToTensor(FDTensor* tensor) {
 void Mat::PrintInfo(const std::string& flag) {
   if (mat_type == ProcLib::FLYCV) {
 #ifdef ENABLE_FLYCV
-    fcv::Scalar mean = fcv::mean(fcv_mat);
-    std::cout << flag << ": "
-              << "DataType=" << Type() << ", "
-              << "Channel=" << Channels() << ", "
-              << "Height=" << Height() << ", "
-              << "Width=" << Width() << ", "
-              << "Mean=";
-    for (int i = 0; i < Channels(); ++i) {
-      std::cout << mean[i] << " ";
-    }
-    std::cout << std::endl;
+    // fcv::Scalar mean = fcv::mean(fcv_mat);
+    // std::cout << flag << ": "
+    //           << "DataType=" << Type() << ", "
+    //           << "Channel=" << Channels() << ", "
+    //           << "Height=" << Height() << ", "
+    //           << "Width=" << Width() << ", "
+    //           << "Mean=";
+    // for (int i = 0; i < Channels(); ++i) {
+    //   std::cout << mean[i] << " ";
+    // }
+    // std::cout << std::endl;
 #else
     FDASSERT(false,
              "FastDeploy didn't compile with FlyCV, but met data type with "
              "fcv::Mat.");
 #endif
   } else {
-    cv::Scalar mean = cv::mean(cpu_mat);
-    std::cout << flag << ": "
-              << "DataType=" << Type() << ", "
-              << "Channel=" << Channels() << ", "
-              << "Height=" << Height() << ", "
-              << "Width=" << Width() << ", "
-              << "Mean=";
-    for (int i = 0; i < Channels(); ++i) {
-      std::cout << mean[i] << " ";
-    }
-    std::cout << std::endl;
+    // cv::Scalar mean = cv::mean(cpu_mat);
+    // std::cout << flag << ": "
+    //           << "DataType=" << Type() << ", "
+    //           << "Channel=" << Channels() << ", "
+    //           << "Height=" << Height() << ", "
+    //           << "Width=" << Width() << ", "
+    //           << "Mean=";
+    // for (int i = 0; i < Channels(); ++i) {
+    //   std::cout << mean[i] << " ";
+    // }
+    // std::cout << std::endl;
   }
 }
 

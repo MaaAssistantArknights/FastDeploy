@@ -31,7 +31,7 @@ FDLogger& FDLogger::operator<<(std::ostream& (*os)(std::ostream&)) {
   if (!verbose_) {
     return *this;
   }
-  std::cout << prefix_ << " " << line_ << std::endl;
+//   std::cout << prefix_ << " " << line_ << std::endl;
 #ifdef __ANDROID__
   __android_log_print(ANDROID_LOG_INFO, prefix_.c_str(), "%s", line_.c_str());
 #endif
