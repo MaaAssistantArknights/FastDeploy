@@ -14,15 +14,15 @@
 
 #pragma once
 
-#include "fastdeploy/core/fd_tensor.h"
-#include "fastdeploy/utils/utils.h"
-#include <algorithm>
-#include <cmath>
 #include <map>
 #include <string>
+#include <algorithm>
+#include <cmath>
+#include "fastdeploy/core/fd_tensor.h"
+#include "fastdeploy/utils/utils.h"
 
 #ifndef NON_64_PLATFORM
-#include <onnxruntime_cxx_api.h>  // NOLINT
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>  // NOLINT
 
 #ifdef WITH_GPU
 #include "fastdeploy/backends/op_cuda_kernels/adaptive_pool2d_kernel.h"
@@ -33,13 +33,14 @@ struct AdaptivePool2dKernel {
  protected:
   std::string pooling_type_ = "avg";
   std::vector<int64_t> output_size_ = {};
-  OrtApi ort_;
+  Ort::CustomOpApi ort_;
   void* compute_stream_;
   const char* provider_;
 
  public:
-  AdaptivePool2dKernel(OrtApi ort, const OrtKernelInfo* info,
-                       const char* provider)
+  AdaptivePool2dKernel(Ort::CustomOpApi ort,
+                        const OrtKernelInfo* info,
+                        const char* provider)
       : ort_(ort) {
     GetAttribute(info);
     provider_ = provider;
@@ -50,14 +51,15 @@ struct AdaptivePool2dKernel {
   void Compute(OrtKernelContext* context);
 
   void CpuAdaptivePool(const std::vector<int64_t>& input_size,
-                       const std::vector<int64_t>& output_size,
-                       const float* input_data, float* output_data);
+                        const std::vector<int64_t>& output_size,
+                        const float* input_data,
+                        float* output_data);
 };
 
 struct AdaptivePool2dOp
     : Ort::CustomOpBase<AdaptivePool2dOp, AdaptivePool2dKernel> {
   explicit AdaptivePool2dOp(const char* provider) : provider_(provider) {}
-  void* CreateKernel(OrtApi api, const OrtKernelInfo* info) const {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new AdaptivePool2dKernel(api, info, provider_);
   }
 
@@ -75,8 +77,9 @@ struct AdaptivePool2dOp
     return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
   }
 
-  const char* GetExecutionProviderType() const { return provider_; }
-
+  const char* GetExecutionProviderType() const {
+    return provider_;
+  }
  private:
   const char* provider_;
 };

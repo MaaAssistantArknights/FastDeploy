@@ -17,7 +17,7 @@
 #include <map>
 
 #ifndef NON_64_PLATFORM
-#include <onnxruntime_cxx_api.h>  // NOLINT
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>  // NOLINT
 
 namespace fastdeploy {
 
@@ -30,10 +30,11 @@ struct MultiClassNmsKernel {
   int64_t nms_top_k;
   bool normalized;
   float score_threshold;
-  OrtApi ort_;
+  Ort::CustomOpApi ort_;
 
  public:
-  MultiClassNmsKernel(OrtApi ort, const OrtKernelInfo* info) : ort_(ort) {
+  MultiClassNmsKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info)
+      : ort_(ort) {
     GetAttribute(info);
   }
 
@@ -49,7 +50,7 @@ struct MultiClassNmsKernel {
 
 struct MultiClassNmsOp
     : Ort::CustomOpBase<MultiClassNmsOp, MultiClassNmsKernel> {
-  void* CreateKernel(OrtApi api, const OrtKernelInfo* info) const {
+  void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MultiClassNmsKernel(api, info);
   }
 

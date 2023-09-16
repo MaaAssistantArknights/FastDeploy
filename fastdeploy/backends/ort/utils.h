@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "fastdeploy/backends/backend.h"
-#include <onnxruntime_cxx_api.h>  // NOLINT
+#include <onnxruntime/core/session/onnxruntime_cxx_api.h>  // NOLINT
 
 namespace fastdeploy {
 

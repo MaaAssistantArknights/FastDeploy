@@ -15,11 +15,19 @@
 #ifndef NON_64_PLATFORM
 
 #include "fastdeploy/backends/ort/ops/multiclass_nms.h"
+#include <algorithm>
 #include "fastdeploy/core/fd_tensor.h"
 #include "fastdeploy/utils/utils.h"
-#include <algorithm>
 
 namespace fastdeploy {
+
+struct OrtTensorDimensions : std::vector<int64_t> {
+  OrtTensorDimensions(Ort::CustomOpApi ort, const OrtValue* value) {
+    OrtTensorTypeAndShapeInfo* info = ort.GetTensorTypeAndShape(value);
+    std::vector<int64_t>::operator=(ort.GetTensorShape(info));
+    ort.ReleaseTensorTypeAndShapeInfo(info);
+  }
+};
 
 template <class T>
 bool SortScorePairDescend(const std::pair<float, T>& pair1,
@@ -155,17 +163,14 @@ int MultiClassNmsKernel::NMSForEachSample(
 }
 
 void MultiClassNmsKernel::Compute(OrtKernelContext* context) {
-  Ort::KernelContext ort_context{context};
-
-  auto boxes = ort_context.GetInput(0);
-  auto scores = ort_context.GetInput(1);
-
-  auto boxes_data = boxes.GetTensorData<float>();
-  auto scores_data = scores.GetTensorData<float>();
-
-  auto boxes_dim = boxes.GetTensorTypeAndShapeInfo().GetShape();
-  auto scores_dim = scores.GetTensorTypeAndShapeInfo().GetShape();
-
+  const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
+  const OrtValue* scores = ort_.KernelContext_GetInput(context, 1);
+  const float* boxes_data =
+      reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
+  const float* scores_data =
+      reinterpret_cast<const float*>(ort_.GetTensorData<float>(scores));
+  OrtTensorDimensions boxes_dim(ort_, boxes);
+  OrtTensorDimensions scores_dim(ort_, scores);
   int score_size = scores_dim.size();
 
   int64_t batch_size = scores_dim[0];
@@ -176,11 +181,12 @@ void MultiClassNmsKernel::Compute(OrtKernelContext* context) {
   FDASSERT(score_size == 3,
            "Require rank of input scores be 3, but now it's %d.", score_size);
   FDASSERT(boxes_dim[2] == 4,
-           "Require the 3-dimension of input boxes be 4, but now it's %ld.",
+           "Require the 3-dimension of input boxes be 4, but now it's %lld.",
            box_dim);
   std::vector<int64_t> out_num_rois_dims = {batch_size};
-  auto out_num_rois = ort_context.GetOutput(2, out_num_rois_dims);
-  int32_t* out_num_rois_data = out_num_rois.GetTensorMutableData<int32_t>();
+  OrtValue* out_num_rois = ort_.KernelContext_GetOutput(
+      context, 2, out_num_rois_dims.data(), out_num_rois_dims.size());
+  int32_t* out_num_rois_data = ort_.GetTensorMutableData<int32_t>(out_num_rois);
 
   std::vector<std::map<int, std::vector<int>>> all_indices;
   for (size_t i = 0; i < batch_size; ++i) {
@@ -197,19 +203,20 @@ void MultiClassNmsKernel::Compute(OrtKernelContext* context) {
   }
   std::vector<int64_t> out_box_dims = {num_nmsed_out, 6};
   std::vector<int64_t> out_index_dims = {num_nmsed_out, 1};
-
-  auto out_box = ort_context.GetOutput(0, out_box_dims);
-  auto out_index = ort_context.GetOutput(1, out_index_dims);
-
+  OrtValue* out_box = ort_.KernelContext_GetOutput(
+      context, 0, out_box_dims.data(), out_box_dims.size());
+  OrtValue* out_index = ort_.KernelContext_GetOutput(
+      context, 1, out_index_dims.data(), out_index_dims.size());
   if (num_nmsed_out == 0) {
-    int32_t* out_num_rois_data = out_num_rois.GetTensorMutableData<int32_t>();
+    int32_t* out_num_rois_data =
+        ort_.GetTensorMutableData<int32_t>(out_num_rois);
     for (size_t i = 0; i < batch_size; ++i) {
       out_num_rois_data[i] = 0;
     }
     return;
   }
-  float* out_box_data = out_box.GetTensorMutableData<float>();
-  int32_t* out_index_data = out_index.GetTensorMutableData<int32_t>();
+  float* out_box_data = ort_.GetTensorMutableData<float>(out_box);
+  int32_t* out_index_data = ort_.GetTensorMutableData<int32_t>(out_index);
 
   int count = 0;
   for (size_t i = 0; i < batch_size; ++i) {
@@ -240,14 +247,14 @@ void MultiClassNmsKernel::Compute(OrtKernelContext* context) {
 }
 
 void MultiClassNmsKernel::GetAttribute(const OrtKernelInfo* info) {
-  Ort::ConstKernelInfo ort_info{info};
-  background_label = ort_info.GetAttribute<int64_t>("background_label");
-  keep_top_k = ort_info.GetAttribute<int64_t>("keep_top_k");
-  nms_eta = ort_info.GetAttribute<float>("nms_eta");
-  nms_threshold = ort_info.GetAttribute<float>("nms_threshold");
-  nms_top_k = ort_info.GetAttribute<float>("nms_top_k");
-  normalized = ort_info.GetAttribute<float>("normalized");
-  score_threshold = ort_info.GetAttribute<float>("score_threshold");
+  background_label =
+      ort_.KernelInfoGetAttribute<int64_t>(info, "background_label");
+  keep_top_k = ort_.KernelInfoGetAttribute<int64_t>(info, "keep_top_k");
+  nms_eta = ort_.KernelInfoGetAttribute<float>(info, "nms_eta");
+  nms_threshold = ort_.KernelInfoGetAttribute<float>(info, "nms_threshold");
+  nms_top_k = ort_.KernelInfoGetAttribute<int64_t>(info, "nms_top_k");
+  normalized = ort_.KernelInfoGetAttribute<int64_t>(info, "normalized");
+  score_threshold = ort_.KernelInfoGetAttribute<float>(info, "score_threshold");
 }
 }  // namespace fastdeploy
 
