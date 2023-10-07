@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(MaaDerpLearning CXX)
+project(fastdeploy_ppocr CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -117,7 +117,7 @@ set_target_properties(FastDeploy_Core FastDeploy_Vision_OCR FastDeploy_Backend_O
 
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18090
 # https://gitlab.kitware.com/cmake/cmake/-/issues/18935
-add_library(MaaDerpLearning
+add_library(fastdeploy_ppocr
     $<TARGET_OBJECTS:FastDeploy_Vision_OCR>
     $<TARGET_OBJECTS:FastDeploy_Vision_Common>
     $<TARGET_OBJECTS:FastDeploy_Core>
@@ -125,7 +125,7 @@ add_library(MaaDerpLearning
     $<TARGET_OBJECTS:FastDeploy_TensorFunction>
 )
 set_target_properties(
-    MaaDerpLearning
+    fastdeploy_ppocr
     FastDeploy_Core
     FastDeploy_Backend_ONNXRuntime
     FastDeploy_TensorFunction
@@ -134,13 +134,13 @@ set_target_properties(
     PROPERTIES
         CXX_STANDARD 17
 )
-target_link_libraries(MaaDerpLearning PUBLIC ${OpenCV_LIBS} PRIVATE onnxruntime::onnxruntime)
+target_link_libraries(fastdeploy_ppocr PUBLIC ${OpenCV_LIBS} PRIVATE onnxruntime::onnxruntime)
 if(ANDROID)
-  target_link_libraries(MaaDerpLearning PRIVATE log)
+  target_link_libraries(fastdeploy_ppocr PRIVATE log)
 endif()
 
-install(TARGETS MaaDerpLearning EXPORT MaaDerpLearningConfig)
-install(EXPORT MaaDerpLearningConfig DESTINATION share/MaaDerpLearning)
+install(TARGETS fastdeploy_ppocr EXPORT fastdeploy_ppocrConfig)
+install(EXPORT fastdeploy_ppocrConfig DESTINATION share/fastdeploy_ppocr)
 install(
   DIRECTORY ${PROJECT_SOURCE_DIR}/fastdeploy
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include
