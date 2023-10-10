@@ -78,7 +78,7 @@ void AdaptivePool2dKernel::Compute(OrtKernelContext* context) {
   float* output_data = output.GetTensorMutableData<float>();
   if (!strcmp(this->provider_, "CUDAExecutionProvider")) {
 #ifdef WITH_GPU
-    auto compute_stream = ort_.KernelContext_GetGPUComputeStream(context);
+    auto compute_stream = ort_context.GetGPUComputeStream();
     CudaAdaptivePool(input_size, output_size_, output_data, input_data,
                      compute_stream, pooling_type_);
 #else
