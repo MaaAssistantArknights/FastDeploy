@@ -353,7 +353,11 @@ struct FASTDEPLOY_DECL RuntimeOption {
   int cpu_thread_num = -1;
   int device_id = 0;
 
+#ifdef WITH_GPU
+  Device device = Device::GPU;
+#else
   Device device = Device::CPU;
+#endif
 
   void* external_stream_ = nullptr;
 
