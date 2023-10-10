@@ -21,6 +21,11 @@ if(WITH_GPU)
     include_directories(PRIVATE ${CUDA_DIRECTORY}/include)
 endif()
 
+option(PRINT_LOG "Print more debug log while running" OFF)
+if(PRINT_LOG)
+    add_definitions(-DPRINT_LOG)
+endif()
+
 add_library(FastDeploy_Core OBJECT
     fastdeploy/core/allocate.cc
     fastdeploy/core/fd_tensor.cc

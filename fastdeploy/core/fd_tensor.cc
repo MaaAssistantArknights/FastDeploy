@@ -249,12 +249,14 @@ void FDTensor::PrintInfo(const std::string& prefix) const {
              "PrintInfo function doesn't support current situation, maybe you "
              "need enhance this function now.");
   }
-//   std::cout << prefix << ": name=" << name << ", shape=";
-//   for (int i = 0; i < shape.size(); ++i) {
-//     std::cout << shape[i] << " ";
-//   }
-//   std::cout << ", dtype=" << Str(dtype) << ", mean=" << mean << ", max=" << max
-//             << ", min=" << min << std::endl;
+#ifdef PRINT_LOG
+  std::cout << prefix << ": name=" << name << ", shape=";
+  for (int i = 0; i < shape.size(); ++i) {
+    std::cout << shape[i] << " ";
+  }
+  std::cout << ", dtype=" << Str(dtype) << ", mean=" << mean << ", max=" << max
+            << ", min=" << min << std::endl;
+#endif
 }
 
 bool FDTensor::ReallocFn(size_t nbytes) {
