@@ -8,6 +8,24 @@ find_package(onnxruntime REQUIRED)
 find_package(Eigen3 REQUIRED)
 message("OpenCV_LIBS: ${OpenCV_LIBS} ${OPENCV_core_FOUND} ${OPENCV_WORLD_FOUND}")
 
+option(WITH_GPU "Whether WITH_GPU=ON, will enable onnxruntime-gpu/paddle-infernce-gpu/poros-gpu" OFF)
+
+if(WITH_GPU)
+    add_definitions (-Wno-format-security)
+    enable_language(CUDA)
+    include(cmake/cuda.cmake)
+    message(STATUS "CUDA compiler: ${CMAKE_CUDA_COMPILER}, version: ${CMAKE_CUDA_COMPILER_ID} ${CMAKE_CUDA_COMPILER_VERSION}")
+    add_definitions(-DWITH_GPU)
+    add_definitions(-DENABLE_CUDA_PREPROCESS)
+    find_library(CUDA_LIB cudart ${CUDA_DIRECTORY}/lib64)
+    include_directories(PRIVATE ${CUDA_DIRECTORY}/include)
+endif()
+
+option(PRINT_LOG "Print more debug log while running" OFF)
+if(PRINT_LOG)
+    add_definitions(-DPRINT_LOG)
+endif()
+
 add_library(FastDeploy_Core OBJECT
     fastdeploy/core/allocate.cc
     fastdeploy/core/fd_tensor.cc
@@ -24,17 +42,25 @@ target_include_directories(FastDeploy_Core PUBLIC
 )
 target_link_libraries(FastDeploy_Core PRIVATE onnxruntime::onnxruntime)
 
-add_library(FastDeploy_Backend_ONNXRuntime OBJECT
+set(BACKEND_ONNXRUNTIME_SRC
     fastdeploy/backends/ort/ops/adaptive_pool2d.cc
     fastdeploy/backends/ort/ops/multiclass_nms.cc
     fastdeploy/backends/ort/ort_backend.cc
     fastdeploy/backends/ort/utils.cc
 )
+if(WITH_GPU)
+    list(APPEND BACKEND_ONNXRUNTIME_SRC
+        fastdeploy/backends/op_cuda_kernels/adaptive_pool2d_kernel.cu
+    )
+endif()
+add_library(FastDeploy_Backend_ONNXRuntime OBJECT ${BACKEND_ONNXRUNTIME_SRC})
 target_include_directories(FastDeploy_Backend_ONNXRuntime PUBLIC ${onnxruntime_INCLUDE_DIRS}) 
 target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE FastDeploy_Core onnxruntime::onnxruntime)
+if(WITH_GPU)
+    target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE ${CUDA_LIB})
+endif()
 
-# hide tensor functions from shared library
-add_library(FastDeploy_TensorFunction OBJECT 
+set(TENSORFUNCTION_SRC
     fastdeploy/function/cast.cc
     fastdeploy/function/clip.cc
     fastdeploy/function/concat.cc
@@ -57,8 +83,18 @@ add_library(FastDeploy_TensorFunction OBJECT
     fastdeploy/function/tile.cc
     fastdeploy/function/transpose.cc
 )
+if(WITH_GPU)
+    list(APPEND TENSORFUNCTION_SRC
+        fastdeploy/function/cuda_cast.cu
+    )
+endif()
+# hide tensor functions from shared library
+add_library(FastDeploy_TensorFunction OBJECT ${TENSORFUNCTION_SRC})
 target_include_directories(FastDeploy_TensorFunction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(FastDeploy_TensorFunction PRIVATE Eigen3::Eigen)
+if(WITH_GPU)
+    target_link_libraries(FastDeploy_TensorFunction PRIVATE ${CUDA_LIB})
+endif()
 if(MSVC)
     set_source_files_properties(
         fastdeploy/function/reduce.cc
@@ -67,7 +103,7 @@ if(MSVC)
     target_compile_definitions(FastDeploy_TensorFunction PRIVATE EIGEN_STRONG_INLINE=inline)
 endif()
 
-add_library(FastDeploy_Vision_Common OBJECT
+set(VISION_COMMON_SRC
     fastdeploy/vision/common/processors/base.cc
     fastdeploy/vision/common/processors/cast.cc
     fastdeploy/vision/common/processors/center_crop.cc
@@ -92,6 +128,15 @@ add_library(FastDeploy_Vision_Common OBJECT
     fastdeploy/vision/common/processors/warp_affine.cc
     fastdeploy/vision/common/result.cc
 )
+if(WITH_GPU)
+    list(APPEND VISION_COMMON_SRC
+        fastdeploy/vision/common/processors/normalize_and_permute.cu
+    )
+endif()
+add_library(FastDeploy_Vision_Common OBJECT ${VISION_COMMON_SRC})
+if(WITH_GPU)
+    target_link_libraries(FastDeploy_Vision_Common PRIVATE ${CUDA_LIB})
+endif()
 target_link_libraries(FastDeploy_Vision_Common PUBLIC FastDeploy_Core ${OpenCV_LIBS} PRIVATE FastDeploy_TensorFunction)
 
 add_library(FastDeploy_Vision_OCR OBJECT
@@ -135,6 +180,9 @@ set_target_properties(
         CXX_STANDARD 17
 )
 target_link_libraries(fastdeploy_ppocr PUBLIC ${OpenCV_LIBS} PRIVATE onnxruntime::onnxruntime)
+if(WITH_GPU)
+    target_link_libraries(fastdeploy_ppocr PRIVATE ${CUDA_LIB})
+endif()
 if(ANDROID)
   target_link_libraries(fastdeploy_ppocr PRIVATE log)
 endif()

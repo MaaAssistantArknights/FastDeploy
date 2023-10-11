@@ -322,16 +322,19 @@ std::map<std::string, float> FastDeployModel::PrintStatisInfoOfRuntime() {
     }
   }
   double avg_time = remain_time / (time_of_runtime_.size() - warmup_iter);
-//   std::cout << "============= Runtime Statis Info(" << ModelName()
-//             << ") =============" << std::endl;
-//   std::cout << "Total iterations: " << time_of_runtime_.size() << std::endl;
-//   std::cout << "Total time of runtime: " << warmup_time + remain_time << "s."
-//             << std::endl;
-//   std::cout << "Warmup iterations: " << warmup_iter << std::endl;
-//   std::cout << "Total time of runtime in warmup step: " << warmup_time << "s."
-//             << std::endl;
-//   std::cout << "Average time of runtime exclude warmup step: "
-//             << avg_time * 1000 << "ms." << std::endl;
+
+#ifdef PRINT_LOG
+  std::cout << "============= Runtime Statis Info(" << ModelName()
+            << ") =============" << std::endl;
+  std::cout << "Total iterations: " << time_of_runtime_.size() << std::endl;
+  std::cout << "Total time of runtime: " << warmup_time + remain_time << "s."
+            << std::endl;
+  std::cout << "Warmup iterations: " << warmup_iter << std::endl;
+  std::cout << "Total time of runtime in warmup step: " << warmup_time << "s."
+            << std::endl;
+  std::cout << "Average time of runtime exclude warmup step: "
+            << avg_time * 1000 << "ms." << std::endl;
+#endif
 
   statis_info_of_runtime_dict["total_time"] = warmup_time + remain_time;
   statis_info_of_runtime_dict["warmup_time"] = warmup_time;
