@@ -311,9 +311,6 @@ void RuntimeOption::UsePaddleBackend() {
 
 // use onnxruntime backend
 void RuntimeOption::UseOrtBackend() {
-#ifdef WITH_GPU
-    UseGpu();
-#endif
 #ifdef ENABLE_ORT_BACKEND
   backend = Backend::ORT;
 #else
