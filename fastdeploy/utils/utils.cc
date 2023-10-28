@@ -37,8 +37,8 @@ FDLogger& FDLogger::operator<<(std::ostream& (*os)(std::ostream&)) {
   __android_log_print(ANDROID_LOG_INFO, prefix_.c_str(), "%s", line_.c_str());
 #endif
   line_ = "";
-  return *this;
 #endif
+  return *this;
 }
 
 bool ReadBinaryFromFile(const std::string& file, std::string* contents) {
