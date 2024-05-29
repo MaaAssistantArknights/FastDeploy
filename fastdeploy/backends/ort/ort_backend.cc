@@ -25,6 +25,16 @@
 #include "paddle2onnx/converter.h"
 #endif
 
+#if __has_include(<onnxruntime/core/providers/dml/dml_provider_factory.h>)
+#define WITH_DML
+#include <onnxruntime/core/providers/dml/dml_provider_factory.h>
+#endif
+
+#if __has_include(<onnxruntime/core/providers/coreml/coreml_provider_factory.h>)
+#define WITH_COREML
+#include <onnxruntime/core/providers/coreml/coreml_provider_factory.h>
+#endif
+
 namespace fastdeploy {
 
 std::vector<OrtCustomOp*> OrtBackend::custom_operators_ =
@@ -57,12 +67,16 @@ void OrtBackend::BuildOption(const OrtBackendOption& option) {
         support_cuda = true;
       }
 #ifndef WITH_GPU
+#ifdef WITH_DML
       if (all_providers[i] == "DmlExecutionProvider") {
         support_dml = true;
       }
+#endif
+#ifdef WITH_COREML
       if (all_providers[i] == "CoreMLExecutionProvider") {
         support_coreml = true;
       }
+#endif
 #endif
     }
     if (support_cuda) {
@@ -74,9 +88,13 @@ void OrtBackend::BuildOption(const OrtBackendOption& option) {
       }
       session_options_.AppendExecutionProvider_CUDA(cuda_options);
     } else if (support_dml) {
-      session_options_.AppendExecutionProvider_DML(option.gpu_id);
+#ifdef WITH_DML
+      OrtDmlApi::SessionOptionsAppendExecutionProvider_DML(session_options_, option.gpu_id);
+#endif
     } else if (support_coreml) {
-      session_options_.AppendExecutionProvider_CoreML(0);
+#ifdef WITH_COREML
+      OrtSessionOptionsAppendExecutionProvider_CoreML((OrtSessionOptions*)session_options_, 0);
+#endif
     } else {
       option_.use_gpu = false;
       FDERROR << "No GPU provider found, please check your environment."
