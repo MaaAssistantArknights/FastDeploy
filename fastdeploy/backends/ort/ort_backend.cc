@@ -56,12 +56,14 @@ void OrtBackend::BuildOption(const OrtBackendOption& option) {
       if (all_providers[i] == "CUDAExecutionProvider") {
         support_cuda = true;
       }
+#ifndef WITH_GPU
       if (all_providers[i] == "DmlExecutionProvider") {
         support_dml = true;
       }
       if (all_providers[i] == "CoreMLExecutionProvider") {
         support_coreml = true;
       }
+#endif
     }
     if (support_cuda) {
       OrtCUDAProviderOptions cuda_options;
