@@ -239,14 +239,8 @@ void RuntimeOption::SetModelBuffer(const char * model_buffer,
 }
 
 void RuntimeOption::UseGpu(int gpu_id) {
-#ifdef WITH_GPU
   device = Device::GPU;
   device_id = gpu_id;
-#else
-  FDWARNING << "The FastDeploy didn't compile with GPU, will force to use CPU."
-            << std::endl;
-  device = Device::CPU;
-#endif
 }
 
 void RuntimeOption::UseCpu() { device = Device::CPU; }
