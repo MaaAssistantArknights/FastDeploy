@@ -25,14 +25,14 @@
 #include "paddle2onnx/converter.h"
 #endif
 
-#if __has_include(<onnxruntime/core/providers/dml/dml_provider_factory.h>)
+#if __has_include(<onnxruntime/dml_provider_factory.h>)
 #define WITH_DML
-#include <onnxruntime/core/providers/dml/dml_provider_factory.h>
+#include <onnxruntime/dml_provider_factory.h>
 #endif
 
-#if __has_include(<onnxruntime/core/providers/coreml/coreml_provider_factory.h>)
+#if __has_include(<onnxruntime/coreml_provider_factory.h>)
 #define WITH_COREML
-#include <onnxruntime/core/providers/coreml/coreml_provider_factory.h>
+#include <onnxruntime/coreml_provider_factory.h>
 #endif
 
 namespace fastdeploy {
