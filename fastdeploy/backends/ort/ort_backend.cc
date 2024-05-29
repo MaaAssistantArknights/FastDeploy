@@ -25,14 +25,14 @@
 #include "paddle2onnx/converter.h"
 #endif
 
-#if __has_include(<onnxruntime/core/providers/dml/dml_provider_factory.h>)
+#if __has_include(<dml_provider_factory.h>)
 #define WITH_DML
-#include <onnxruntime/core/providers/dml/dml_provider_factory.h>
+#include <dml_provider_factory.h>
 #endif
 
-#if __has_include(<onnxruntime/core/providers/coreml/coreml_provider_factory.h>)
+#if __has_include(<coreml_provider_factory.h>)
 #define WITH_COREML
-#include <onnxruntime/core/providers/coreml/coreml_provider_factory.h>
+#include <coreml_provider_factory.h>
 #endif
 
 namespace fastdeploy {
@@ -89,7 +89,7 @@ void OrtBackend::BuildOption(const OrtBackendOption& option) {
       session_options_.AppendExecutionProvider_CUDA(cuda_options);
     } else if (support_dml) {
 #ifdef WITH_DML
-      OrtDmlApi::SessionOptionsAppendExecutionProvider_DML(session_options_, option.gpu_id);
+      OrtSessionOptionsAppendExecutionProvider_DML(session_options_, option.gpu_id);
 #endif
     } else if (support_coreml) {
 #ifdef WITH_COREML
