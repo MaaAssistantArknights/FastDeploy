@@ -8,9 +8,9 @@ find_package(onnxruntime REQUIRED)
 find_package(Eigen3 REQUIRED)
 message("OpenCV_LIBS: ${OpenCV_LIBS} ${OPENCV_core_FOUND} ${OPENCV_WORLD_FOUND}")
 
-option(WITH_GPU "Whether WITH_GPU=ON, will enable onnxruntime-gpu/paddle-infernce-gpu/poros-gpu" OFF)
+option(WITH_CUDA "Whether WITH_GPU=ON, will enable onnxruntime-gpu/paddle-infernce-gpu/poros-gpu" OFF)
 
-if(WITH_GPU)
+if(WITH_CUDA)
     add_definitions (-Wno-format-security)
     enable_language(CUDA)
     include(cmake/cuda.cmake)
@@ -48,7 +48,7 @@ set(BACKEND_ONNXRUNTIME_SRC
     fastdeploy/backends/ort/ort_backend.cc
     fastdeploy/backends/ort/utils.cc
 )
-if(WITH_GPU)
+if(WITH_CUDA)
     list(APPEND BACKEND_ONNXRUNTIME_SRC
         fastdeploy/backends/op_cuda_kernels/adaptive_pool2d_kernel.cu
     )
@@ -56,7 +56,7 @@ endif()
 add_library(FastDeploy_Backend_ONNXRuntime OBJECT ${BACKEND_ONNXRUNTIME_SRC})
 target_include_directories(FastDeploy_Backend_ONNXRuntime PUBLIC ${onnxruntime_INCLUDE_DIRS}) 
 target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE FastDeploy_Core onnxruntime::onnxruntime)
-if(WITH_GPU)
+if(WITH_CUDA)
     target_link_libraries(FastDeploy_Backend_ONNXRuntime PRIVATE ${CUDA_LIB})
 endif()
 
@@ -83,7 +83,7 @@ set(TENSORFUNCTION_SRC
     fastdeploy/function/tile.cc
     fastdeploy/function/transpose.cc
 )
-if(WITH_GPU)
+if(WITH_CUDA)
     list(APPEND TENSORFUNCTION_SRC
         fastdeploy/function/cuda_cast.cu
     )
@@ -92,7 +92,7 @@ endif()
 add_library(FastDeploy_TensorFunction OBJECT ${TENSORFUNCTION_SRC})
 target_include_directories(FastDeploy_TensorFunction PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(FastDeploy_TensorFunction PRIVATE Eigen3::Eigen)
-if(WITH_GPU)
+if(WITH_CUDA)
     target_link_libraries(FastDeploy_TensorFunction PRIVATE ${CUDA_LIB})
 endif()
 if(MSVC)
@@ -128,13 +128,13 @@ set(VISION_COMMON_SRC
     fastdeploy/vision/common/processors/warp_affine.cc
     fastdeploy/vision/common/result.cc
 )
-if(WITH_GPU)
+if(WITH_CUDA)
     list(APPEND VISION_COMMON_SRC
         fastdeploy/vision/common/processors/normalize_and_permute.cu
     )
 endif()
 add_library(FastDeploy_Vision_Common OBJECT ${VISION_COMMON_SRC})
-if(WITH_GPU)
+if(WITH_CUDA)
     target_link_libraries(FastDeploy_Vision_Common PRIVATE ${CUDA_LIB})
 endif()
 target_link_libraries(FastDeploy_Vision_Common PUBLIC FastDeploy_Core ${OpenCV_LIBS} PRIVATE FastDeploy_TensorFunction)
