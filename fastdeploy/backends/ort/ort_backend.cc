@@ -25,7 +25,7 @@
 #include "paddle2onnx/converter.h"
 #endif
 
-#if __has_include(<onnxruntime/dml_provider_factory.h>)
+#if 1 || __has_include(<onnxruntime/dml_provider_factory.h>)
 #define WITH_DML
 #include <onnxruntime/dml_provider_factory.h>
 #endif
@@ -89,7 +89,7 @@ void OrtBackend::BuildOption(const OrtBackendOption& option) {
       session_options_.AppendExecutionProvider_CUDA(cuda_options);
     } else if (support_dml) {
 #ifdef WITH_DML
-      OrtDmlApi::SessionOptionsAppendExecutionProvider_DML(session_options_, option.gpu_id);
+      OrtSessionOptionsAppendExecutionProvider_DML(session_options_, option.gpu_id);
 #endif
     } else if (support_coreml) {
 #ifdef WITH_COREML
