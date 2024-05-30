@@ -179,6 +179,12 @@ set_target_properties(
     PROPERTIES
         CXX_STANDARD 17
 )
+
+target_include_directories(fastdeploy_ppocr INTERFACE 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>  # for build
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDE}>  # for install
+)
+
 target_link_libraries(fastdeploy_ppocr PUBLIC ${OpenCV_LIBS} PRIVATE onnxruntime::onnxruntime)
 if(WITH_GPU)
     target_link_libraries(fastdeploy_ppocr PRIVATE ${CUDA_LIB})
